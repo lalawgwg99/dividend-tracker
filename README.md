@@ -48,7 +48,7 @@
 
 ## 📍 部署位置
 
-- **GitHub Pages**: https://lalawgwg99.github.io/dividend-tracker/
+- **GitHub Pages**: https://dividend-tracker-eby.pages.dev/
 - **GitHub Repo**: https://github.com/lalawgwg99/dividend-tracker
 
 ## 🛠️ 本地開發
