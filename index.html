@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>股息記錄器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+    .input-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .form-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #555;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .totals-section {
+      background: #e8f5e9;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .totals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .total-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .total-card h3 {
+      color: #2e7d32;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .total-card .amount {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1b5e20;
+    }
+    .filter-section {
+      background: #fff3e0;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .table-container {
+      overflow-x: auto;
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+    }
+    th {
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+    }
+    tr:hover {
+      background: #e3f2fd;
+    }
+    .delete-btn {
+      background: #dc3545;
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    .delete-btn:hover {
+      background: #c82333;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📈 股息記錄器</h1>
+    
+    <div class="input-section">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="stockName">股票名稱/代碼</label>
+          <input type="text" id="stockName" placeholder="例如：2330、台積電">
+        </div>
+        <div class="form-group">
+          <label for="divDate">配息日期</label>
+          <input type="date" id="divDate">
+        </div>
+        <div class="form-group">
+          <label for="divAmount">配息金額</label>
+          <input type="number" id="divAmount" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="remarks">備註</label>
+          <input type="text" id="remarks" placeholder="選填">
+        </div>
+      </div>
+      <button onclick="addDividend()">加入配息紀錄</button>
+    </div>
+
+    <div class="totals-section">
+      <h3 style="margin-bottom: 15px; color: #2e7d32;">💰 總額統計</h3>
+      <div class="totals-grid">
+        <div class="total-card">
+          <h3>總配息金額</h3>
+          <div class="amount" id="totalAmount">NT$ 0.00</div>
+        </div>
+        <div class="total-card">
+          <h3>紀錄筆數</h3>
+          <div class="amount" id="totalCount">0</div>
+        </div>
+        <div class="total-card">
+          <h3>平均單筆</h3>
+          <div class="amount" id="avgAmount">NT$ 0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-row">
+        <div class="form-group">
+          <label for="startDate">開始日期</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="form-group">
+          <label for="endDate">結束日期</label>
+          <input type="date" id="endDate">
+        </div>
+        <div class="form-group">
+          <label for="filterStock">股票篩選</label>
+          <select id="filterStock">
+            <option value="">全部股票</option>
+          </select>
+        </div>
+        <button onclick="applyFilter()">套索篩選</button>
+        <button onclick="clearFilter()" style="background: #6c757d;">清除篩選</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>配息日期</th>
+            <th>股票名稱</th>
+            <th>配息金額</th>
+            <th>備註</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state">📭 尚未有配息紀錄，加入第一筆吧！</div>
+    </div>
+  </div>
+
+  <script>
+    let dividends = JSON.parse(localStorage.getItem('dividendRecords')) || [];
+    
+    function init() {
+      renderTable();
+      updateTotals();
+      updateStockFilter();
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('startDate').value = today;
+      document.getElementById('endDate').value = today;
+    }
+
+    function addDividend() {
+      const stockName = document.getElementById('stockName').value.trim();
+      const divDate = document.getElementById('divDate').value;
+      const divAmount = parseFloat(document.getElementById('divAmount').value);
+      const remarks = document.getElementById('remarks').value.trim();
+
+      if (!stockName || !divDate || isNaN(divAmount) || divAmount <= 0) {
+        alert('請完整填妥股票名稱、配息日期和配息金額！');
+        return;
+      }
+
+      const record = { id: Date.now(), stockName, divDate, divAmount, remarks, createdAt: new Date().toISOString() };
+      dividends.push(record);
+      saveData();
+      document.getElementById('stockName').value = '';
+      document.getElementById('divAmount').value = '';
+      document.getElementById('remarks').value = '';
+      document.getElementById('divDate').value = '';
+      renderTable();
+      updateTotals();
+      updateStockFilter();
+      alert('✅ 已加入配息紀錄！');
+    }
+
+    function deleteRecord(id) {
+      if (!confirm('確定要刪除此筆紀錄嗎？')) return;
+      dividends = dividends.filter(d => d.id !== id);
+      saveData();
+      renderTable();
+      updateTotals();
+      updateStockFilter();
+    }
+
+    function saveData() {
+      localStorage.setItem('dividendRecords', JSON.stringify(dividends));
+    }
+
+    function renderTable() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const filterStock = document.getElementById('filterStock').value;
+      let filtered = [...dividends];
+      if (startDate) filtered = filtered.filter(d => d.divDate >= startDate);
+      if (endDate) filtered = filtered.filter(d => d.divDate <= endDate);
+      if (filterStock) filtered = filtered.filter(d => d.stockName === filterStock);
+      filtered.sort((a, b) => new Date(b.divDate) - new Date(a.divDate));
+
+      const tbody = document.getElementById('tableBody');
+      const emptyState = document.getElementById('emptyState');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      tbody.innerHTML = filtered.map(d => `
+        <tr>
+          <td>${formatDate(d.divDate)}</td>
+          <td><strong>${escapeHtml(d.stockName)}</strong></td>
+          <td style="color: #2e7d32; font-weight: bold;">NT$ ${d.divAmount.toFixed(2)}</td>
+          <td>${escapeHtml(d.remarks || '-')}</td>
+          <td><button class="delete-btn" onclick="deleteRecord(${d.id})">刪除</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function updateTotals() {
+      const filtered = getFilteredDividends();
+      const total = filtered.reduce((sum, d) => sum + d.divAmount, 0);
+      const count = filtered.length;
+      const avg = count > 0 ? total / count : 0;
+      document.getElementById('totalAmount').textContent = `NT$ ${total.toFixed(2)}`;
+      document.getElementById('totalCount').textContent = count;
+      document.getElementById('avgAmount').textContent = `NT$ ${avg.toFixed(2)}`;
+    }
+
+    function getFilteredDividends() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const filterStock = document.getElementById('filterStock').value;
+      let filtered = [...dividends];
+      if (startDate) filtered = filtered.filter(d => d.divDate >= startDate);
+      if (endDate) filtered = filtered.filter(d => d.divDate <= endDate);
+      if (filterStock) filtered = filtered.filter(d => d.stockName === filterStock);
+      return filtered;
+    }
+
+    function updateStockFilter() {
+      const select = document.getElementById('filterStock');
+      const stocks = [...new Set(dividends.map(d => d.stockName))].sort();
+      select.innerHTML = '<option value="">全部股票</option>' + stocks.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    }
+
+    function applyFilter() { renderTable(); updateTotals(); }
+
+    function clearFilter() {
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+      document.getElementById('filterStock').value = '';
+      renderTable();
+      updateTotals();
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    init();
+  </script>
+</body>
+</html>
