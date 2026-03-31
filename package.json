@@ -1,0 +1,12 @@
+{
+  "name": "stock-cost-calculator",
+  "version": "1.0.0",
+  "description": "持股成本計算器",
+  "main": "stock-cost-calculator.js",
+  "scripts": {
+    "start": "node stock-cost-calculator.js",
+    "test": "node stock-cost-calculator.test.js"
+  },
+  "keywords": ["stock", "cost", "calculator", "Investment"],
+  "license": "MIT"
+}
