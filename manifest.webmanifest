@@ -1,0 +1,18 @@
+{
+  "name": "股息記錄器 Pro",
+  "short_name": "股息記錄器",
+  "description": "台灣存股族專用：配息、殖利率、健保補充保費、年度對比、預告行事曆",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#1e40af",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
