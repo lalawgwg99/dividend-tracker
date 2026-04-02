@@ -85,6 +85,7 @@ function bindEvents() {
   dom.cancelEditBtn.addEventListener('click', cancelEdit);
   dom.searchInput.addEventListener('input', applyFilter);
   dom.divAmount.addEventListener('input', updateYieldPreview);
+  dom.shares.addEventListener('input', updateYieldPreview);
   dom.buyCost.addEventListener('input', updateYieldPreview);
 
   document.getElementById('applyFilterBtn').addEventListener('click', applyFilter);
@@ -222,9 +223,11 @@ function resetForm() {
 
 function updateYieldPreview() {
   const divAmount = toNumber(dom.divAmount.value);
+  const shares = toNumber(dom.shares.value);
   const buyCost = toNumber(dom.buyCost.value);
   const yieldValue = calculateYield(divAmount, buyCost);
-  const premium = calculateHealthPremium(divAmount);
+  const totalDividend = divAmount * (shares > 0 ? shares : 0);
+  const premium = calculateHealthPremium(totalDividend);
 
   if (yieldValue > 0) {
     dom.yieldPreview.textContent = `殖利率 ${yieldValue.toFixed(2)}%`;
@@ -234,12 +237,14 @@ function updateYieldPreview() {
     dom.yieldPreview.classList.remove('yield-good');
   }
 
-  if (premium > 0) {
-    dom.premiumPreview.textContent = `⚠️ 扣 ${formatMoney(premium)}`;
-  } else if (divAmount > 0) {
-    dom.premiumPreview.textContent = '✅ 免扣保費';
+  if (totalDividend > 0) {
+    if (premium > 0) {
+      dom.premiumPreview.textContent = `總配息 ${formatMoney(totalDividend)}・⚠️扣 ${formatMoney(premium)}`;
+    } else {
+      dom.premiumPreview.textContent = `總配息 ${formatMoney(totalDividend)}・免扣保費`;
+    }
   } else {
-    dom.premiumPreview.textContent = '補充保費 --';
+    dom.premiumPreview.textContent = '總配息 --';
   }
 }
 
@@ -341,10 +346,11 @@ function renderTable() {
         <td>${formatDate(d.divDate)}</td>
         <td><strong>${escapeHtml(d.stockName)}</strong></td>
         <td><span class="tag tag-${d.category}">${getCategoryName(d.category)}</span></td>
-        <td style="color: var(--secondary); font-weight: 800;">${formatMoney(d.divAmount)}</td>
+        <td style="color: var(--secondary); font-weight: 800;">${formatMoney(d.totalDividend)}</td>
         <td>${Math.round(d.shares).toLocaleString('zh-TW')}</td>
         <td>${formatMoney(d.buyCost)}</td>
         <td class="${yieldClass}" style="font-weight:700;">${d.yieldPct.toFixed(2)}%</td>
+        <td style="color:#059669;font-weight:800;">${formatMoney(d.totalDividend)}</td>
         <td>${premiumTag}</td>
         <td style="font-weight:700;">${formatMoney(d.netAmount)}</td>
         <td>${escapeHtml(d.remarks || '-')}</td>
@@ -364,8 +370,8 @@ function renderHoldings() {
   state.dividends.forEach(d => {
     if (!byStock.has(d.stockName)) byStock.set(d.stockName, { stockName: d.stockName, totalCost: 0, totalDividend: 0 });
     const item = byStock.get(d.stockName);
-    item.totalCost = Math.max(item.totalCost, d.buyCost);
-    item.totalDividend += d.divAmount;
+    item.totalCost = Math.max(item.totalCost, d.buyCost * d.shares);
+    item.totalDividend += d.totalDividend;
   });
 
   const rows = Array.from(byStock.values()).sort((a, b) => b.totalDividend - a.totalDividend);
@@ -428,15 +434,15 @@ function renderForecasts() {
 
 function renderTotals() {
   const filtered = getFilteredDividends();
-  const total = filtered.reduce((sum, d) => sum + d.divAmount, 0);
+  const total = filtered.reduce((sum, d) => sum + d.totalDividend, 0);
   const premiumTotal = filtered.reduce((sum, d) => sum + d.premium, 0);
   const count = filtered.length;
   const avg = count > 0 ? total / count : 0;
 
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
-  const currentYearTotal = filtered.filter(d => new Date(d.divDate).getFullYear() === currentYear).reduce((sum, d) => sum + d.divAmount, 0);
-  const previousYearTotal = filtered.filter(d => new Date(d.divDate).getFullYear() === previousYear).reduce((sum, d) => sum + d.divAmount, 0);
+  const currentYearTotal = filtered.filter(d => new Date(d.divDate).getFullYear() === currentYear).reduce((sum, d) => sum + d.totalDividend, 0);
+  const previousYearTotal = filtered.filter(d => new Date(d.divDate).getFullYear() === previousYear).reduce((sum, d) => sum + d.totalDividend, 0);
   const delta = currentYearTotal - previousYearTotal;
 
   dom.totalAmount.textContent = formatMoney(total);
@@ -465,7 +471,7 @@ function updateCharts() {
   const byMonth = {};
   filtered.forEach(d => {
     const month = d.divDate.slice(0, 7);
-    byMonth[month] = (byMonth[month] || 0) + d.divAmount;
+    byMonth[month] = (byMonth[month] || 0) + d.totalDividend;
   });
   const monthLabels = Object.keys(byMonth).sort();
   state.charts.month.data.labels = monthLabels;
@@ -474,8 +480,8 @@ function updateCharts() {
 
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
-  const previous = filtered.filter(d => new Date(d.divDate).getFullYear() === previousYear).reduce((sum, d) => sum + d.divAmount, 0);
-  const current = filtered.filter(d => new Date(d.divDate).getFullYear() === currentYear).reduce((sum, d) => sum + d.divAmount, 0);
+  const previous = filtered.filter(d => new Date(d.divDate).getFullYear() === previousYear).reduce((sum, d) => sum + d.totalDividend, 0);
+  const current = filtered.filter(d => new Date(d.divDate).getFullYear() === currentYear).reduce((sum, d) => sum + d.totalDividend, 0);
 
   state.charts.year.data.labels = [`${previousYear}`, `${currentYear}`];
   state.charts.year.data.datasets[0].data = [previous, current];
@@ -514,7 +520,7 @@ function exportCSV() {
     return;
   }
 
-  const headers = ['配息日期', '股票名稱', '分類', '配息金額', '股數', '買入成本', '殖利率%', '補充保費', '實拿', '備註'];
+  const headers = ['配息日期', '股票名稱', '分類', '每股配息', '股數', '每股均價', '總配息', '殖利率%', '補充保費', '實拿', '備註'];
   const rows = list.map(d => [
     d.divDate,
     d.stockName,
@@ -522,6 +528,7 @@ function exportCSV() {
     d.divAmount.toFixed(2),
     d.shares,
     d.buyCost.toFixed(2),
+    d.totalDividend.toFixed(2),
     d.yieldPct.toFixed(2),
     d.premium.toFixed(2),
     d.netAmount.toFixed(2),
