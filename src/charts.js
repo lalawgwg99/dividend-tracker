@@ -1,3 +1,16 @@
+const FONT = "'Inter', 'Noto Sans TC', sans-serif";
+
+const defaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+};
+
+const tickStyle = {
+  color: '#9a9690',
+  font: { family: FONT, size: 11 },
+};
+
 export function createMonthChart(ctx) {
   return new Chart(ctx, {
     type: 'bar',
@@ -6,17 +19,26 @@ export function createMonthChart(ctx) {
       datasets: [{
         label: '每月配息',
         data: [],
-        backgroundColor: '#2563eb',
-        borderRadius: 8
+        backgroundColor: '#0c6e3c',
+        hoverBackgroundColor: '#0f9050',
+        borderRadius: 3,
+        borderSkipped: false,
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      ...defaults,
       scales: {
-        y: { beginAtZero: true, grid: { color: '#e2e8f0' } },
-        x: { grid: { display: false } }
+        y: {
+          beginAtZero: true,
+          grid: { color: '#ede9e0', drawTicks: false },
+          border: { display: false },
+          ticks: { ...tickStyle, padding: 8 }
+        },
+        x: {
+          grid: { display: false },
+          border: { display: false },
+          ticks: { ...tickStyle }
+        }
       }
     }
   });
@@ -30,14 +52,27 @@ export function createYearChart(ctx) {
       datasets: [{
         label: '年度總配息',
         data: [],
-        backgroundColor: ['#0ea5e9', '#22c55e']
+        backgroundColor: ['#c8a060', '#0c6e3c'],
+        hoverBackgroundColor: ['#b08040', '#0f9050'],
+        borderRadius: 3,
+        borderSkipped: false,
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
+      ...defaults,
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#ede9e0', drawTicks: false },
+          border: { display: false },
+          ticks: { ...tickStyle, padding: 8 }
+        },
+        x: {
+          grid: { display: false },
+          border: { display: false },
+          ticks: { ...tickStyle }
+        }
+      }
     }
   });
 }

@@ -3,109 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0e1f3d">
+  <meta name="theme-color" content="#06111f">
   <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/styles.css">
-  <title>股息記錄器</title>
+  <title>股息追蹤 · 台灣股市</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- 頂部導航 (桌機) -->
+  <!-- ── 頂部導航 ── -->
   <header class="topnav">
     <div class="topnav-brand">
-      <span class="brand-icon">📈</span>
-      <span class="brand-name">股息記錄器</span>
-      <span class="brand-sub">台股版</span>
+      <span class="brand-mark">◆</span>
+      <span class="brand-name">股息追蹤</span>
+      <span class="brand-pipe">|</span>
+      <span class="brand-sub">台灣股市</span>
     </div>
     <nav class="topnav-links">
       <button class="nav-btn active" data-tab="tab-overview">總覽</button>
       <button class="nav-btn" data-tab="tab-records">配息紀錄</button>
-      <button class="nav-btn" data-tab="tab-forecast">預告行事曆</button>
-      <button class="nav-btn" data-tab="tab-backup">備份設定</button>
+      <button class="nav-btn" data-tab="tab-forecast">預告</button>
+      <button class="nav-btn" data-tab="tab-backup">備份</button>
     </nav>
   </header>
 
   <main class="page-content">
 
-    <!-- ═══════════════════════════════ 總覽 ═══════════════════════════════ -->
+    <!-- ══════════════ 總覽 ══════════════ -->
     <section id="tab-overview" class="tab-panel active">
 
-      <!-- Hero 統計 -->
+      <!-- Hero -->
       <div class="hero-strip">
         <div class="hero-main">
-          <div class="hero-eyebrow">累積配息總額</div>
-          <div class="hero-number" id="totalAmount">NT$ 0</div>
-          <div class="hero-meta">
-            共 <strong id="totalCount">0</strong> 筆・平均每筆
-            <strong id="avgAmount">NT$ 0</strong>
-          </div>
+          <p class="hero-eyebrow">累積配息總額</p>
+          <h2 class="hero-number" id="totalAmount">NT$ 0</h2>
+          <p class="hero-meta">共 <span id="totalCount">0</span> 筆紀錄・平均每筆 <span id="avgAmount">NT$ 0</span></p>
         </div>
+        <div class="hero-rule"></div>
         <div class="hero-stats">
           <div class="hstat">
-            <div class="hstat-label" id="currentYearLabel">今年配息</div>
-            <div class="hstat-value accent-green" id="currentYearTotal">NT$ 0</div>
+            <p class="hstat-label" id="currentYearLabel">今年配息</p>
+            <p class="hstat-value green" id="currentYearTotal">NT$ 0</p>
           </div>
           <div class="hstat">
-            <div class="hstat-label" id="previousYearLabel">去年配息</div>
-            <div class="hstat-value" id="previousYearTotal">NT$ 0</div>
+            <p class="hstat-label" id="previousYearLabel">去年配息</p>
+            <p class="hstat-value" id="previousYearTotal">NT$ 0</p>
           </div>
           <div class="hstat">
-            <div class="hstat-label">年度增減</div>
-            <div class="hstat-value" id="yoyDelta">–</div>
+            <p class="hstat-label">年度增減 YoY</p>
+            <p class="hstat-value" id="yoyDelta">–</p>
           </div>
           <div class="hstat">
-            <div class="hstat-label">補充保費扣繳</div>
-            <div class="hstat-value accent-amber" id="premiumTotal">NT$ 0</div>
+            <p class="hstat-label">補充保費扣繳</p>
+            <p class="hstat-value amber" id="premiumTotal">NT$ 0</p>
           </div>
         </div>
       </div>
 
-      <!-- 持股回本 + 趨勢圖 -->
+      <!-- 雙欄儀表板 -->
       <div class="dashboard-grid">
-        <div class="card">
-          <div class="card-header">📌 持股回本進度</div>
+        <div class="mag-card">
+          <div class="mag-card-header">持股回本進度</div>
           <div id="holdingsBody" class="holdings-list"></div>
-          <div id="holdingsEmpty" class="empty-hint">新增配息紀錄後顯示持股進度</div>
+          <div id="holdingsEmpty" class="empty-hint">新增配息紀錄後顯示</div>
         </div>
-        <div class="card">
-          <div class="card-header">📊 每月配息趨勢</div>
+        <div class="mag-card">
+          <div class="mag-card-header">每月配息趨勢</div>
           <div class="chart-box"><canvas id="chart"></canvas></div>
         </div>
       </div>
 
-      <!-- 年度對比 -->
-      <div class="card">
-        <div class="card-header">🆚 年度配息對比</div>
+      <div class="mag-card">
+        <div class="mag-card-header">年度配息對比</div>
         <div class="chart-box chart-short"><canvas id="yearChart"></canvas></div>
       </div>
 
     </section>
 
-    <!-- ═══════════════════════════════ 配息紀錄 ═══════════════════════════════ -->
+    <!-- ══════════════ 配息紀錄 ══════════════ -->
     <section id="tab-records" class="tab-panel">
 
-      <!-- 新增表單 (可折疊) -->
-      <div class="card form-card" id="addFormCard">
+      <!-- 新增表單 -->
+      <div class="mag-card form-card">
         <button class="form-toggle-btn" id="toggleFormBtn">
-          <span>➕ 新增配息紀錄</span>
-          <span id="formArrow" class="arrow">▼</span>
+          <span class="form-toggle-label">新增配息紀錄</span>
+          <span id="formArrow" class="form-arrow">−</span>
         </button>
         <div id="addFormBody" class="form-body">
           <div class="form-grid">
-            <div class="fg">
-              <label>股票名稱 / 代碼</label>
+            <div class="fg fg-wide">
+              <label>股票代碼 / 名稱</label>
               <div class="input-with-btn">
                 <input type="text" id="stockName" placeholder="2330 台積電">
-                <button type="button" class="btn btn-lookup" id="lookupDivBtn" title="查詢配息記錄">📥 帶入</button>
+                <button type="button" class="btn-fetch" id="lookupDivBtn">帶入配息</button>
               </div>
             </div>
             <div class="fg">
               <label>分類</label>
               <select id="category">
-                <option value="stable">💎 穩定配息</option>
-                <option value="dividend">💰 高股息</option>
-                <option value="potential">🚀 潛力股</option>
+                <option value="stable">穩定配息</option>
+                <option value="dividend">高股息</option>
+                <option value="potential">潛力股</option>
               </select>
             </div>
             <div class="fg">
@@ -114,28 +114,29 @@
             </div>
             <div class="fg">
               <label>每股配息（NT$）</label>
-              <input type="number" id="divAmount" placeholder="例：10" step="0.01" min="0">
+              <input type="number" id="divAmount" placeholder="10.00" step="0.01" min="0">
             </div>
             <div class="fg">
-              <label>股數</label>
+              <label>持有股數</label>
               <input type="number" id="shares" placeholder="1000" step="1" min="1">
             </div>
             <div class="fg">
               <label>每股均價（NT$）</label>
-              <input type="number" id="buyCost" placeholder="例：888" step="0.01" min="0">
+              <input type="number" id="buyCost" placeholder="888.00" step="0.01" min="0">
             </div>
             <div class="fg">
-              <label>備註（選填）</label>
-              <input type="text" id="remarks" placeholder="例：第一季配息">
+              <label>備註</label>
+              <input type="text" id="remarks" placeholder="選填">
             </div>
             <div class="fg preview-fg">
               <label>即時試算</label>
-              <div class="preview-chips">
-                <span id="yieldPreview" class="chip chip-blue">殖利率 --</span>
-                <span id="premiumPreview" class="chip chip-amber">補充保費 --</span>
+              <div class="preview-row">
+                <span id="yieldPreview" class="preview-badge">殖利率 –</span>
+                <span id="premiumPreview" class="preview-badge preview-badge-amber">補充保費 –</span>
               </div>
             </div>
           </div>
+
           <!-- 配息查詢結果 -->
           <div id="dividendPicker" class="div-picker" style="display:none;">
             <div class="div-picker-header">
@@ -145,26 +146,26 @@
             <div id="divPickerList" class="div-picker-list"></div>
           </div>
 
-          <div class="form-actions">
-            <button class="btn btn-primary" id="submitDividendBtn">✅ 加入紀錄</button>
-            <button class="btn btn-ghost" id="cancelEditBtn" style="display:none;">↩ 取消編輯</button>
+          <div class="form-footer">
+            <button class="btn-primary" id="submitDividendBtn">加入紀錄</button>
+            <button class="btn-ghost" id="cancelEditBtn" style="display:none;">取消編輯</button>
           </div>
         </div>
       </div>
 
       <!-- 篩選列 -->
-      <div class="filter-row">
+      <div class="filter-bar">
         <input type="date" id="startDate">
         <input type="date" id="endDate">
         <select id="filterStock"><option value="">全部股票</option></select>
-        <input type="text" id="searchInput" placeholder="🔍 搜尋股票或備註">
-        <button class="btn btn-sm" id="applyFilterBtn">篩選</button>
-        <button class="btn btn-sm btn-ghost" id="clearFilterBtn">重置</button>
-        <div class="filter-right">
-          <button class="btn btn-sm btn-ghost" id="exportCsvBtn">📥 CSV</button>
-          <button class="btn btn-sm btn-ghost" id="triggerImportCsvBtn">📤 匯入</button>
+        <input type="text" id="searchInput" placeholder="搜尋股票或備註…">
+        <button class="btn-sm" id="applyFilterBtn">篩選</button>
+        <button class="btn-sm btn-sm-ghost" id="clearFilterBtn">重置</button>
+        <div class="filter-actions">
+          <button class="btn-sm btn-sm-ghost" id="exportCsvBtn">匯出 CSV</button>
+          <button class="btn-sm btn-sm-ghost" id="triggerImportCsvBtn">匯入</button>
           <input type="file" id="fileInput" style="display:none;" accept=".csv">
-          <button class="btn btn-sm btn-danger" id="clearAllBtn" title="清除所有資料">🗑</button>
+          <button class="btn-sm btn-sm-danger" id="clearAllBtn">清除</button>
         </div>
       </div>
 
@@ -189,21 +190,21 @@
           </thead>
           <tbody id="tableBody"></tbody>
         </table>
-        <div id="emptyState" class="empty-hint" style="padding:60px 20px;">
-          📭 尚未有配息紀錄，點上方「新增配息紀錄」開始！
+        <div id="emptyState" class="empty-hint" style="padding:64px 0;">
+          尚無配息紀錄，點上方「新增配息紀錄」開始
         </div>
       </div>
 
     </section>
 
-    <!-- ═══════════════════════════════ 預告行事曆 ═══════════════════════════════ -->
+    <!-- ══════════════ 預告 ══════════════ -->
     <section id="tab-forecast" class="tab-panel">
 
-      <div class="card" style="margin-bottom:14px;">
-        <div class="card-header">📅 新增配息預告</div>
+      <div class="mag-card" style="margin-bottom:16px;">
+        <div class="mag-card-header">新增配息預告</div>
         <div class="form-grid">
           <div class="fg">
-            <label>股票名稱 / 代碼</label>
+            <label>股票代碼 / 名稱</label>
             <input type="text" id="forecastStock" placeholder="0056 元大高股息">
           </div>
           <div class="fg">
@@ -215,70 +216,77 @@
             <input type="number" id="forecastAmount" placeholder="0" step="0.01" min="0">
           </div>
           <div class="fg">
-            <label>備註（選填）</label>
-            <input type="text" id="forecastNotes" placeholder="可選填">
+            <label>備註</label>
+            <input type="text" id="forecastNotes" placeholder="選填">
           </div>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" id="addForecastBtn">➕ 加入預告</button>
-          <button class="btn btn-ghost" id="exportIcsBtn">📆 匯出 iCal</button>
-          <button class="btn btn-ghost" id="exportGoogleCsvBtn">🗓 Google CSV</button>
+        <div class="form-footer">
+          <button class="btn-primary" id="addForecastBtn">加入預告</button>
+          <button class="btn-ghost" id="exportIcsBtn">匯出 iCal</button>
+          <button class="btn-ghost" id="exportGoogleCsvBtn">Google CSV</button>
         </div>
       </div>
 
-      <div class="forecast-banner">
-        <span class="forecast-label">未來 3 個月預估入帳</span>
-        <span class="forecast-amount" id="nextThreeMonthsAmount">NT$ 0</span>
+      <div class="pullquote">
+        <span class="pullquote-label">未來 3 個月預估入帳</span>
+        <span class="pullquote-value" id="nextThreeMonthsAmount">NT$ 0</span>
       </div>
 
-      <div class="table-wrap">
+      <div class="table-wrap" style="margin-top:14px;">
         <table>
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>股票</th>
-              <th>預估金額</th>
-              <th>備註</th>
-              <th>操作</th>
-            </tr>
-          </thead>
+          <thead><tr><th>日期</th><th>股票</th><th>預估金額</th><th>備註</th><th>操作</th></tr></thead>
           <tbody id="forecastBody"></tbody>
         </table>
-        <div id="forecastEmpty" class="empty-hint" style="padding:50px 20px;">尚未新增預告配息</div>
+        <div id="forecastEmpty" class="empty-hint" style="padding:48px 0;">尚未新增預告配息</div>
       </div>
 
     </section>
 
-    <!-- ═══════════════════════════════ 備份設定 ═══════════════════════════════ -->
+    <!-- ══════════════ 備份 ══════════════ -->
     <section id="tab-backup" class="tab-panel">
-      <div class="card">
-        <div class="card-header">☁️ 資料備份與還原</div>
-        <p class="card-desc">匯出備份後，手動上傳至 Google Drive 或 iCloud Drive 保存。還原時選擇備份檔即可覆蓋現有資料。</p>
-        <div class="backup-grid">
-          <button class="backup-tile" id="exportBackupBtn">
-            <span class="bt-icon">☁️</span>
-            <span class="bt-title">匯出備份</span>
-            <span class="bt-sub">JSON 格式下載</span>
+      <div class="mag-card">
+        <div class="mag-card-header">資料備份與還原</div>
+        <p class="mag-card-desc">匯出備份後，上傳至 Google Drive 或 iCloud Drive 儲存。還原時選擇備份檔即可覆蓋現有資料。</p>
+        <div class="backup-list">
+          <button class="backup-row" id="exportBackupBtn">
+            <span class="backup-row-icon">↓</span>
+            <div class="backup-row-text">
+              <span class="backup-row-title">匯出備份</span>
+              <span class="backup-row-sub">將所有紀錄下載為 JSON 檔案</span>
+            </div>
+            <span class="backup-row-arrow">›</span>
           </button>
-          <button class="backup-tile" id="importBackupBtn">
-            <span class="bt-icon">♻️</span>
-            <span class="bt-title">還原備份</span>
-            <span class="bt-sub">匯入 JSON 覆蓋</span>
+          <button class="backup-row" id="importBackupBtn">
+            <span class="backup-row-icon">↑</span>
+            <div class="backup-row-text">
+              <span class="backup-row-title">還原備份</span>
+              <span class="backup-row-sub">從 JSON 備份檔還原所有資料</span>
+            </div>
+            <span class="backup-row-arrow">›</span>
           </button>
-          <button class="backup-tile" id="shareBackupBtn">
-            <span class="bt-icon">📲</span>
-            <span class="bt-title">手機分享</span>
-            <span class="bt-sub">傳送到雲端</span>
+          <button class="backup-row" id="shareBackupBtn">
+            <span class="backup-row-icon">⇪</span>
+            <div class="backup-row-text">
+              <span class="backup-row-title">手機分享</span>
+              <span class="backup-row-sub">透過系統分享傳送備份檔</span>
+            </div>
+            <span class="backup-row-arrow">›</span>
           </button>
-          <button class="backup-tile backup-tile-outline" id="openDriveBtn">
-            <span class="bt-icon">🔗</span>
-            <span class="bt-title">Google Drive</span>
-            <span class="bt-sub">開啟雲端硬碟</span>
+          <button class="backup-row backup-row-muted" id="openDriveBtn">
+            <span class="backup-row-icon">⊞</span>
+            <div class="backup-row-text">
+              <span class="backup-row-title">Google Drive</span>
+              <span class="backup-row-sub">開啟雲端硬碟</span>
+            </div>
+            <span class="backup-row-arrow">›</span>
           </button>
-          <button class="backup-tile backup-tile-outline" id="openIcloudBtn">
-            <span class="bt-icon">🍎</span>
-            <span class="bt-title">iCloud Drive</span>
-            <span class="bt-sub">開啟 iCloud</span>
+          <button class="backup-row backup-row-muted" id="openIcloudBtn">
+            <span class="backup-row-icon">◎</span>
+            <div class="backup-row-text">
+              <span class="backup-row-title">iCloud Drive</span>
+              <span class="backup-row-sub">開啟 iCloud 雲端硬碟</span>
+            </div>
+            <span class="backup-row-arrow">›</span>
           </button>
         </div>
         <input type="file" id="backupInput" style="display:none;" accept=".json">
@@ -290,19 +298,19 @@
   <!-- 行動裝置底部導航 -->
   <nav class="bottom-nav">
     <button class="bnav-item active" data-tab="tab-overview">
-      <span class="bnav-icon">📊</span>
+      <span class="bnav-icon">◆</span>
       <span class="bnav-label">總覽</span>
     </button>
     <button class="bnav-item" data-tab="tab-records">
-      <span class="bnav-icon">📝</span>
+      <span class="bnav-icon">≡</span>
       <span class="bnav-label">記錄</span>
     </button>
     <button class="bnav-item" data-tab="tab-forecast">
-      <span class="bnav-icon">📅</span>
+      <span class="bnav-icon">◷</span>
       <span class="bnav-label">預告</span>
     </button>
     <button class="bnav-item" data-tab="tab-backup">
-      <span class="bnav-icon">☁️</span>
+      <span class="bnav-icon">⊙</span>
       <span class="bnav-label">備份</span>
     </button>
   </nav>
@@ -310,36 +318,31 @@
   <div class="toast-wrap" id="toastWrap"></div>
 
   <script>
-    // Tab 切換
     function switchTab(id) {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
       document.getElementById(id).classList.add('active');
       document.querySelectorAll(`[data-tab="${id}"]`).forEach(b => b.classList.add('active'));
-      // 切到記錄 tab 時自動滾到頂部
-      if (id === 'tab-records') window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     document.querySelectorAll('[data-tab]').forEach(b =>
       b.addEventListener('click', () => switchTab(b.dataset.tab))
     );
 
-    // 表單折疊
-    const formBody = document.getElementById('addFormBody');
+    const formBody  = document.getElementById('addFormBody');
     const formArrow = document.getElementById('formArrow');
     let formOpen = true;
     document.getElementById('toggleFormBtn').addEventListener('click', () => {
       formOpen = !formOpen;
       formBody.style.display = formOpen ? '' : 'none';
-      formArrow.textContent = formOpen ? '▲' : '▼';
+      formArrow.textContent  = formOpen ? '−' : '+';
     });
 
-    // 供 main.js 呼叫：編輯時展開表單並切換 tab
     window.openRecordForm = function () {
       switchTab('tab-records');
       if (!formOpen) {
         formOpen = true;
         formBody.style.display = '';
-        formArrow.textContent = '▲';
+        formArrow.textContent = '−';
       }
     };
   </script>
