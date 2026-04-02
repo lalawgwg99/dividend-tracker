@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dividend-tracker-v2';
+const CACHE_NAME = 'dividend-tracker-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
