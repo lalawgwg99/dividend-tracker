@@ -1,10 +1,31 @@
 // 台灣證交所 Open API 查詢工具
 // 端點來源：https://openapi.twse.com.tw
 
-const BASE = 'https://openapi.twse.com.tw/v1';
+const BASE  = 'https://openapi.twse.com.tw/v1';
+const PROXY = 'https://corsproxy.io/?url=';   // CORS 代理（TWSE 直連有跨域限制）
+
 const CACHE_STOCKS = 'twse_stocks_cache';
 const CACHE_DIVS   = 'twse_dividends_cache';
 const TTL = 4 * 60 * 60 * 1000; // 4 小時快取
+
+/**
+ * 帶 CORS fallback 的 fetch：
+ * 1. 先試直連
+ * 2. 若回傳 HTML（CORS 被擋）→ 改走 corsproxy.io
+ */
+async function fetchJSON(url) {
+  // 先試直連
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    const text = await res.text();
+    if (!text.trimStart().startsWith('<')) return JSON.parse(text);
+  } catch { /* 直連失敗，繼續走 proxy */ }
+
+  // 走 CORS proxy
+  const res = await fetch(PROXY + encodeURIComponent(url));
+  if (!res.ok) throw new Error(`伺服器回應 ${res.status}`);
+  return res.json();
+}
 
 function getCache(key) {
   try {
@@ -37,9 +58,7 @@ export function rocToISO(rocStr) {
 async function getStockMap() {
   let map = getCache(CACHE_STOCKS);
   if (!map) {
-    const res = await fetch(`${BASE}/exchangeReport/STOCK_DAY_ALL`);
-    if (!res.ok) throw new Error('無法取得股票清單');
-    const list = await res.json();
+    const list = await fetchJSON(`${BASE}/exchangeReport/STOCK_DAY_ALL`);
     map = {};
     list.forEach(s => { map[s.Code] = s.Name; });
     setCache(CACHE_STOCKS, map);
@@ -60,9 +79,7 @@ export async function lookupStockName(code) {
 export async function fetchDividendsForStock(code) {
   let all = getCache(CACHE_DIVS);
   if (!all) {
-    const res = await fetch(`${BASE}/opendata/t187ap45_L`);
-    if (!res.ok) throw new Error('無法取得股利資料');
-    all = await res.json();
+    all = await fetchJSON(`${BASE}/opendata/t187ap45_L`);
     setCache(CACHE_DIVS, all);
   }
 
