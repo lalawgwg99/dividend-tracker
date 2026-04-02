@@ -287,24 +287,18 @@ async function lookupDividendData() {
 
     pickerTitle.textContent = `${name || code} 配息記錄（點選自動帶入）`;
     pickerList.innerHTML = records.map((r, i) => {
-      const rocYear = parseInt(r.year);
-      const adYear  = rocYear + 1911;
-      const periodLabel = r.period === '年度' ? '全年' : r.period;
-      const stockNote = r.stockPerShare > 0 ? `・股票股利 ${r.stockPerShare} 元/股` : '';
-      const progressNote = r.progress ? `<span style="color:var(--sub)">${r.progress}</span>` : '';
+      const stockNote  = r.stockPerShare > 0 ? `・股票股利 ${r.stockPerShare} 元/股` : '';
+      const exDivLabel = r.exDivDate ? `除息日 ${r.exDivDate}` : '';
+      const payLabel   = r.payDate   ? `・配息日 ${r.payDate}` : '';
       return `
         <div class="div-picker-item" data-idx="${i}">
           <div class="div-picker-left">
-            <div class="div-picker-year">民國 ${rocYear} 年（${adYear}）${periodLabel}</div>
-            <div class="div-picker-meta">
-              ${r.meetingDate ? `股東會 ${r.meetingDate}` : ''}
-              ${stockNote}
-              ${progressNote}
-            </div>
+            <div class="div-picker-year">${r.year} 年度</div>
+            <div class="div-picker-meta">${exDivLabel}${payLabel}${stockNote}</div>
           </div>
           <div>
             <div class="div-picker-cash">${r.cashPerShare} 元/股</div>
-            ${r.stockPerShare > 0 ? `<div class="div-picker-stock">+股利 ${r.stockPerShare} 元</div>` : ''}
+            ${r.stockPerShare > 0 ? `<div class="div-picker-stock">+股票股利 ${r.stockPerShare} 元</div>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -314,10 +308,12 @@ async function lookupDividendData() {
       el.addEventListener('click', () => {
         const r = records[parseInt(el.dataset.idx)];
         dom.divAmount.value = r.cashPerShare;
-        if (r.meetingDate) dom.divDate.value = r.meetingDate;
+        // 優先用配息入帳日，其次除息日
+        const fillDate = r.payDate || r.exDivDate || '';
+        if (fillDate) dom.divDate.value = fillDate;
         updateYieldPreview();
         picker.style.display = 'none';
-        showToast(`已帶入 ${r.cashPerShare} 元/股，請確認日期與股數`, 'success');
+        showToast(`已帶入 ${r.cashPerShare} 元/股，請確認股數與每股均價`, 'success');
       });
     });
 
