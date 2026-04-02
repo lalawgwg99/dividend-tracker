@@ -13,12 +13,20 @@
   <div class="container">
     <header>
       <h1>股息記錄器 Pro</h1>
-      <p class="subtitle">台灣存股族版：殖利率、健保補充保費、年度對比、配息預告、持股回本一次看</p>
+      <p class="subtitle">殖利率・健保補充保費・年度對比・配息預告・持股回本</p>
     </header>
 
-    <div class="grid">
-      <div class="card">
-        <h2>➕ 配息紀錄（可編輯）</h2>
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="tab-records">📝 紀錄</button>
+      <button class="tab-btn" data-tab="tab-overview">📊 總覽</button>
+      <button class="tab-btn" data-tab="tab-forecast">📅 預告</button>
+      <button class="tab-btn" data-tab="tab-backup">☁️ 備份</button>
+    </nav>
+
+    <!-- Tab 1: 紀錄 -->
+    <div id="tab-records" class="tab-panel active">
+      <div class="card" style="margin-bottom:18px;">
+        <h2>➕ 新增配息紀錄</h2>
         <div class="form-row">
           <div class="form-group"><label for="stockName">股票名稱/代碼</label><input type="text" id="stockName" placeholder="2330 台積電"></div>
           <div class="form-group"><label for="category">分類</label><select id="category"><option value="stable">💎 穩定配息</option><option value="dividend">💰 高股息</option><option value="potential">🚀 潛力股</option></select></div>
@@ -27,10 +35,18 @@
           <div class="form-group"><label for="shares">股數</label><input type="number" id="shares" placeholder="1000" step="1" min="1"></div>
           <div class="form-group"><label for="buyCost">買入成本 (NT$)</label><input type="number" id="buyCost" placeholder="500000" step="0.01" min="0"></div>
         </div>
-        <div class="form-row">
+        <div class="form-row form-row-compact">
           <div class="form-group"><label for="remarks">備註</label><input type="text" id="remarks" placeholder="選填"></div>
-          <div class="form-group"><label>殖利率（自動）</label><div id="yieldPreview" class="yield-display">--</div><div class="mini-note">> 5% 會綠色標示</div></div>
-          <div class="form-group"><label>補充保費試算</label><div id="premiumPreview" class="yield-display">--</div><div class="mini-note">單次配息 > 20,000 扣 2.11%</div></div>
+          <div class="form-group preview-group">
+            <label>殖利率（自動）</label>
+            <div id="yieldPreview" class="yield-display">--</div>
+            <div class="mini-note">> 5% 綠色標示</div>
+          </div>
+          <div class="form-group preview-group">
+            <label>補充保費</label>
+            <div id="premiumPreview" class="yield-display">--</div>
+            <div class="mini-note">單次 > 20,000 扣 2.11%</div>
+          </div>
         </div>
         <div class="btn-group">
           <button class="btn btn-primary" id="submitDividendBtn">✅ 加入紀錄</button>
@@ -38,24 +54,78 @@
         </div>
       </div>
 
-      <div class="card">
-        <h2>📊 統計與年度對比</h2>
-        <div class="stats-grid">
-          <div class="stat-card"><h3>總配息</h3><div class="value" id="totalAmount">NT$ 0</div></div>
-          <div class="stat-card"><h3>紀錄筆數</h3><div class="value" id="totalCount">0</div></div>
-          <div class="stat-card"><h3>平均單筆</h3><div class="value" id="avgAmount">NT$ 0</div></div>
-          <div class="stat-card"><h3>補充保費總扣繳</h3><div class="value" id="premiumTotal">NT$ 0</div></div>
-          <div class="stat-card"><h3 id="currentYearLabel">今年</h3><div class="value" id="currentYearTotal">NT$ 0</div></div>
-          <div class="stat-card"><h3 id="previousYearLabel">去年</h3><div class="value" id="previousYearTotal">NT$ 0</div></div>
-          <div class="stat-card"><h3>年增減 (YoY)</h3><div class="value" id="yoyDelta">NT$ 0</div></div>
+      <div class="filter-section">
+        <div class="filter-row">
+          <div class="form-group"><label for="startDate">開始日期</label><input type="date" id="startDate"></div>
+          <div class="form-group"><label for="endDate">結束日期</label><input type="date" id="endDate"></div>
+          <div class="form-group"><label for="filterStock">股票篩選</label><select id="filterStock"><option value="">全部股票</option></select></div>
+          <div class="form-group"><label for="searchInput">搜尋</label><input type="text" id="searchInput" placeholder="股票名稱或備註"></div>
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="applyFilterBtn">🔍 篩選</button>
+            <button class="btn btn-secondary" id="clearFilterBtn">🔄 重置</button>
+            <button class="btn btn-secondary" id="exportCsvBtn">📥 CSV</button>
+            <button class="btn btn-secondary" id="triggerImportCsvBtn">📤 匯入</button>
+            <input type="file" id="fileInput" style="display:none;" accept=".csv">
+            <button class="btn btn-danger" id="clearAllBtn">🗑️ 清除</button>
+          </div>
         </div>
-        <div class="chart-container"><canvas id="chart"></canvas></div>
-        <div class="chart-container"><canvas id="yearChart"></canvas></div>
+      </div>
+
+      <div class="table-container">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="divDate">配息日期</th>
+              <th class="sortable" data-sort="stockName">股票名稱</th>
+              <th>分類</th>
+              <th class="sortable" data-sort="divAmount">配息金額</th>
+              <th class="sortable" data-sort="shares">股數</th>
+              <th class="sortable" data-sort="buyCost">買入成本</th>
+              <th class="sortable" data-sort="yield">殖利率</th>
+              <th class="sortable" data-sort="premium">補充保費</th>
+              <th class="sortable" data-sort="netAmount">實拿</th>
+              <th>備註</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state">📭 尚未有配息紀錄，加入第一筆吧！</div>
       </div>
     </div>
 
-    <div class="grid">
-      <div class="card">
+    <!-- Tab 2: 總覽 -->
+    <div id="tab-overview" class="tab-panel">
+      <div class="stats-grid" style="margin-bottom:20px;">
+        <div class="stat-card"><h3>總配息</h3><div class="value" id="totalAmount">NT$ 0</div></div>
+        <div class="stat-card"><h3>紀錄筆數</h3><div class="value" id="totalCount">0</div></div>
+        <div class="stat-card"><h3>平均單筆</h3><div class="value" id="avgAmount">NT$ 0</div></div>
+        <div class="stat-card"><h3>補充保費扣繳</h3><div class="value" id="premiumTotal">NT$ 0</div></div>
+        <div class="stat-card"><h3 id="currentYearLabel">今年</h3><div class="value" id="currentYearTotal">NT$ 0</div></div>
+        <div class="stat-card"><h3 id="previousYearLabel">去年</h3><div class="value" id="previousYearTotal">NT$ 0</div></div>
+        <div class="stat-card"><h3>年增減 (YoY)</h3><div class="value" id="yoyDelta">NT$ 0</div></div>
+      </div>
+
+      <div class="grid">
+        <div class="card"><div class="chart-container"><canvas id="chart"></canvas></div></div>
+        <div class="card"><div class="chart-container"><canvas id="yearChart"></canvas></div></div>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <h2>📌 持股總覽（回本進度）</h2>
+        <div class="table-container" style="margin-bottom:0;">
+          <table>
+            <thead><tr><th>股票名稱</th><th>累積投入成本</th><th>累積配息</th><th>回本進度</th></tr></thead>
+            <tbody id="holdingsBody"></tbody>
+          </table>
+        </div>
+        <div id="holdingsEmpty" class="empty-state">目前沒有持股總覽資料</div>
+      </div>
+    </div>
+
+    <!-- Tab 3: 預告 -->
+    <div id="tab-forecast" class="tab-panel">
+      <div class="card" style="margin-bottom:18px;">
         <h2>📅 配息預告行事曆</h2>
         <div class="form-row">
           <div class="form-group"><label for="forecastStock">股票名稱/代碼</label><input type="text" id="forecastStock" placeholder="0056 元大高股息"></div>
@@ -63,18 +133,35 @@
           <div class="form-group"><label for="forecastAmount">預估金額 (NT$)</label><input type="number" id="forecastAmount" placeholder="0" step="0.01" min="0"></div>
           <div class="form-group"><label for="forecastNotes">備註</label><input type="text" id="forecastNotes" placeholder="可選填"></div>
         </div>
-        <div class="btn-group" style="margin-bottom:10px;">
+        <div class="btn-group" style="margin-bottom:14px;">
           <button class="btn btn-primary" id="addForecastBtn">➕ 加入預告</button>
-          <button class="btn btn-secondary" id="exportIcsBtn">📆 匯出 iCal (.ics)</button>
-          <button class="btn btn-secondary" id="exportGoogleCsvBtn">🗓️ 匯出 Google Calendar CSV</button>
+          <button class="btn btn-secondary" id="exportIcsBtn">📆 匯出 iCal</button>
+          <button class="btn btn-secondary" id="exportGoogleCsvBtn">🗓️ Google Calendar CSV</button>
         </div>
-        <div class="mini-note">未來 3 個月預估入帳</div>
-        <div class="forecast-highlight" id="nextThreeMonthsAmount">NT$ 0</div>
+        <div class="forecast-meta">
+          <span class="mini-note">未來 3 個月預估入帳</span>
+          <div class="forecast-highlight" id="nextThreeMonthsAmount">NT$ 0</div>
+        </div>
       </div>
 
       <div class="card">
+        <h2>🗓️ 配息預告清單</h2>
+        <div class="table-container" style="margin-bottom:0;">
+          <table>
+            <thead><tr><th>日期</th><th>股票</th><th>預估金額</th><th>備註</th><th>操作</th></tr></thead>
+            <tbody id="forecastBody"></tbody>
+          </table>
+        </div>
+        <div id="forecastEmpty" class="empty-state">尚未新增預告配息</div>
+      </div>
+    </div>
+
+    <!-- Tab 4: 備份 -->
+    <div id="tab-backup" class="tab-panel">
+      <div class="card">
         <h2>🧱 雲端備份（Google Drive / iCloud）</h2>
-        <div class="btn-group" style="margin-bottom:10px;">
+        <p class="mini-note" style="margin-bottom:16px;">匯出備份後，手動上傳至 Google Drive 或 iCloud Drive 保存。</p>
+        <div class="btn-group" style="margin-bottom:12px;">
           <button class="btn btn-primary" id="exportBackupBtn">☁️ 匯出備份 JSON</button>
           <button class="btn btn-secondary" id="importBackupBtn">♻️ 還原備份 JSON</button>
           <button class="btn btn-warning" id="shareBackupBtn">📲 手機分享到雲端</button>
@@ -86,70 +173,19 @@
         </div>
       </div>
     </div>
-
-    <div class="card" style="margin-bottom:18px;">
-      <h2>📌 持股總覽（回本進度）</h2>
-      <div class="table-container" style="margin-bottom:0;">
-        <table>
-          <thead><tr><th>股票名稱</th><th>累積投入成本</th><th>累積配息</th><th>回本進度</th></tr></thead>
-          <tbody id="holdingsBody"></tbody>
-        </table>
-      </div>
-      <div id="holdingsEmpty" class="empty-state">目前沒有持股總覽資料</div>
-    </div>
-
-    <div class="filter-section">
-      <div class="filter-row">
-        <div class="form-group"><label for="startDate">開始日期</label><input type="date" id="startDate"></div>
-        <div class="form-group"><label for="endDate">結束日期</label><input type="date" id="endDate"></div>
-        <div class="form-group"><label for="filterStock">股票篩選</label><select id="filterStock"><option value="">全部股票</option></select></div>
-        <div class="form-group"><label for="searchInput">搜尋</label><input type="text" id="searchInput" placeholder="股票名稱或備註"></div>
-        <div class="btn-group">
-          <button class="btn btn-secondary" id="applyFilterBtn">🔍 篩選</button>
-          <button class="btn btn-secondary" id="clearFilterBtn">🔄 重置</button>
-          <button class="btn btn-secondary" id="exportCsvBtn">📥 匯出 CSV</button>
-          <button class="btn btn-secondary" id="triggerImportCsvBtn">📤 匯入 CSV</button>
-          <input type="file" id="fileInput" style="display:none;" accept=".csv">
-          <button class="btn btn-danger" id="clearAllBtn">🗑️ 清除所有數據</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="table-container">
-      <table id="dataTable">
-        <thead>
-          <tr>
-            <th class="sortable" data-sort="divDate">配息日期</th>
-            <th class="sortable" data-sort="stockName">股票名稱</th>
-            <th>分類</th>
-            <th class="sortable" data-sort="divAmount">配息金額</th>
-            <th class="sortable" data-sort="shares">股數</th>
-            <th class="sortable" data-sort="buyCost">買入成本</th>
-            <th class="sortable" data-sort="yield">殖利率</th>
-            <th class="sortable" data-sort="premium">補充保費</th>
-            <th class="sortable" data-sort="netAmount">實拿</th>
-            <th>備註</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-      <div id="emptyState" class="empty-state">📭 尚未有配息紀錄，加入第一筆吧！</div>
-    </div>
-
-    <div class="card">
-      <h2>🗓️ 配息預告清單</h2>
-      <div class="table-container" style="margin-bottom:0;">
-        <table>
-          <thead><tr><th>日期</th><th>股票</th><th>預估金額</th><th>備註</th><th>操作</th></tr></thead>
-          <tbody id="forecastBody"></tbody>
-        </table>
-      </div>
-      <div id="forecastEmpty" class="empty-state">尚未新增預告配息</div>
-    </div>
   </div>
 
   <div class="toast-wrap" id="toastWrap"></div>
+  <script>
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
