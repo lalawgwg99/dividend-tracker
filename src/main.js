@@ -13,6 +13,7 @@ import {
   parseCsvLine,
   todayISO
 } from './utils.js';
+import { lookupStockName, fetchDividendsForStock, extractCode } from './twse.js';
 
 const state = {
   dividends: [],
@@ -94,6 +95,11 @@ function bindEvents() {
   document.getElementById('triggerImportCsvBtn').addEventListener('click', () => dom.fileInput.click());
   dom.fileInput.addEventListener('change', importCSV);
   document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
+
+  document.getElementById('lookupDivBtn').addEventListener('click', lookupDividendData);
+  document.getElementById('closeDivPicker').addEventListener('click', () => {
+    document.getElementById('dividendPicker').style.display = 'none';
+  });
 
   document.getElementById('addForecastBtn').addEventListener('click', addForecast);
   document.getElementById('exportIcsBtn').addEventListener('click', exportForecastICS);
@@ -245,6 +251,82 @@ function updateYieldPreview() {
     }
   } else {
     dom.premiumPreview.textContent = '總配息 --';
+  }
+}
+
+async function lookupDividendData() {
+  const rawInput = dom.stockName.value.trim();
+  const code = extractCode(rawInput);
+  if (!code) {
+    showToast('請先輸入股票代號（如 2330）', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('lookupDivBtn');
+  const picker = document.getElementById('dividendPicker');
+  btn.disabled = true;
+  btn.textContent = '查詢中…';
+
+  try {
+    // 自動帶入股票名稱
+    const name = await lookupStockName(code);
+    if (name && !rawInput.includes(name)) {
+      dom.stockName.value = `${code} ${name}`;
+    }
+
+    // 查詢配息記錄
+    const records = await fetchDividendsForStock(code);
+    const pickerTitle = document.getElementById('divPickerTitle');
+    const pickerList  = document.getElementById('divPickerList');
+
+    if (records.length === 0) {
+      showToast(`${code} 近期無配息記錄（可能為未上市或無配息）`, 'warning');
+      picker.style.display = 'none';
+      return;
+    }
+
+    pickerTitle.textContent = `${name || code} 配息記錄（點選自動帶入）`;
+    pickerList.innerHTML = records.map((r, i) => {
+      const rocYear = parseInt(r.year);
+      const adYear  = rocYear + 1911;
+      const periodLabel = r.period === '年度' ? '全年' : r.period;
+      const stockNote = r.stockPerShare > 0 ? `・股票股利 ${r.stockPerShare} 元/股` : '';
+      const progressNote = r.progress ? `<span style="color:var(--sub)">${r.progress}</span>` : '';
+      return `
+        <div class="div-picker-item" data-idx="${i}">
+          <div class="div-picker-left">
+            <div class="div-picker-year">民國 ${rocYear} 年（${adYear}）${periodLabel}</div>
+            <div class="div-picker-meta">
+              ${r.meetingDate ? `股東會 ${r.meetingDate}` : ''}
+              ${stockNote}
+              ${progressNote}
+            </div>
+          </div>
+          <div>
+            <div class="div-picker-cash">${r.cashPerShare} 元/股</div>
+            ${r.stockPerShare > 0 ? `<div class="div-picker-stock">+股利 ${r.stockPerShare} 元</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    // 點選帶入
+    pickerList.querySelectorAll('.div-picker-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const r = records[parseInt(el.dataset.idx)];
+        dom.divAmount.value = r.cashPerShare;
+        if (r.meetingDate) dom.divDate.value = r.meetingDate;
+        updateYieldPreview();
+        picker.style.display = 'none';
+        showToast(`已帶入 ${r.cashPerShare} 元/股，請確認日期與股數`, 'success');
+      });
+    });
+
+    picker.style.display = 'block';
+  } catch (err) {
+    showToast(`查詢失敗：${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📥 帶入';
   }
 }
 

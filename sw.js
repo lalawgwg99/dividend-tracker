@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dividend-tracker-v4';
+const CACHE_NAME = 'dividend-tracker-v5';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -10,7 +10,8 @@ const APP_SHELL = [
   '/src/charts.js',
   '/src/config.js',
   '/src/storage.js',
-  '/src/utils.js'
+  '/src/utils.js',
+  '/src/twse.js'
 ];
 
 self.addEventListener('install', event => {

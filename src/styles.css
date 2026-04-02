@@ -208,6 +208,83 @@ body {
 }
 
 /* ════════════════════════════════════════════════════
+   股票代號輸入 + 查詢按鈕
+════════════════════════════════════════════════════ */
+.input-with-btn {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+.input-with-btn input { flex: 1; min-width: 0; }
+.btn-lookup {
+  background: #0e1f3d;
+  color: #93c5fd;
+  border: 1.5px solid #1a3666;
+  border-radius: 9px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: .15s;
+  font-family: inherit;
+}
+.btn-lookup:hover { background: #1a3666; color: #fff; }
+.btn-lookup:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 配息查詢結果面板 */
+.div-picker {
+  background: #f8fafc;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.div-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+.div-picker-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sub);
+  font-size: 14px;
+  padding: 2px 4px;
+}
+.div-picker-list { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.div-picker-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: .15s;
+  gap: 12px;
+}
+.div-picker-item:hover { border-color: var(--blue); background: #eff6ff; }
+.div-picker-left { flex: 1; }
+.div-picker-year { font-size: 13px; font-weight: 700; color: var(--text); }
+.div-picker-meta { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.div-picker-cash {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--green);
+  white-space: nowrap;
+}
+.div-picker-stock { font-size: 11px; color: var(--amber); font-weight: 600; }
+
+/* ════════════════════════════════════════════════════
    新增表單
 ════════════════════════════════════════════════════ */
 .form-card { margin-bottom: 14px; }

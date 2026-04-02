@@ -95,7 +95,10 @@
           <div class="form-grid">
             <div class="fg">
               <label>股票名稱 / 代碼</label>
-              <input type="text" id="stockName" placeholder="2330 台積電">
+              <div class="input-with-btn">
+                <input type="text" id="stockName" placeholder="2330 台積電">
+                <button type="button" class="btn btn-lookup" id="lookupDivBtn" title="查詢配息記錄">📥 帶入</button>
+              </div>
             </div>
             <div class="fg">
               <label>分類</label>
@@ -133,6 +136,15 @@
               </div>
             </div>
           </div>
+          <!-- 配息查詢結果 -->
+          <div id="dividendPicker" class="div-picker" style="display:none;">
+            <div class="div-picker-header">
+              <span id="divPickerTitle">配息記錄</span>
+              <button type="button" class="div-picker-close" id="closeDivPicker">✕</button>
+            </div>
+            <div id="divPickerList" class="div-picker-list"></div>
+          </div>
+
           <div class="form-actions">
             <button class="btn btn-primary" id="submitDividendBtn">✅ 加入紀錄</button>
             <button class="btn btn-ghost" id="cancelEditBtn" style="display:none;">↩ 取消編輯</button>
