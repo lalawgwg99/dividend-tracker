@@ -197,6 +197,7 @@ function editRecord(id) {
   dom.submitDividendBtn.textContent = '💾 儲存修改';
   dom.cancelEditBtn.style.display = 'inline-flex';
   updateYieldPreview();
+  if (window.openRecordForm) window.openRecordForm();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -226,19 +227,19 @@ function updateYieldPreview() {
   const premium = calculateHealthPremium(divAmount);
 
   if (yieldValue > 0) {
-    dom.yieldPreview.textContent = `${yieldValue.toFixed(2)}%`;
+    dom.yieldPreview.textContent = `殖利率 ${yieldValue.toFixed(2)}%`;
     dom.yieldPreview.classList.toggle('yield-good', yieldValue > 5);
   } else {
-    dom.yieldPreview.textContent = '--';
+    dom.yieldPreview.textContent = '殖利率 --';
     dom.yieldPreview.classList.remove('yield-good');
   }
 
   if (premium > 0) {
     dom.premiumPreview.textContent = `⚠️ 扣 ${formatMoney(premium)}`;
   } else if (divAmount > 0) {
-    dom.premiumPreview.textContent = '✅ 免扣補充保費';
+    dom.premiumPreview.textContent = '✅ 免扣保費';
   } else {
-    dom.premiumPreview.textContent = '--';
+    dom.premiumPreview.textContent = '補充保費 --';
   }
 }
 
@@ -363,7 +364,7 @@ function renderHoldings() {
   state.dividends.forEach(d => {
     if (!byStock.has(d.stockName)) byStock.set(d.stockName, { stockName: d.stockName, totalCost: 0, totalDividend: 0 });
     const item = byStock.get(d.stockName);
-    item.totalCost += d.buyCost;
+    item.totalCost = Math.max(item.totalCost, d.buyCost);
     item.totalDividend += d.divAmount;
   });
 
@@ -376,8 +377,22 @@ function renderHoldings() {
 
   dom.holdingsEmpty.style.display = 'none';
   dom.holdingsBody.innerHTML = rows.map(row => {
-    const progress = row.totalCost > 0 ? (row.totalDividend / row.totalCost) * 100 : 0;
-    return `<tr><td><strong>${escapeHtml(row.stockName)}</strong></td><td>${formatMoney(row.totalCost)}</td><td style="color:#15803d;font-weight:800;">${formatMoney(row.totalDividend)}</td><td style="font-weight:700;color:${progress >= 50 ? '#047857' : '#1d4ed8'};">${progress.toFixed(2)}%</td></tr>`;
+    const progress = row.totalCost > 0 ? Math.min((row.totalDividend / row.totalCost) * 100, 100) : 0;
+    const color = progress >= 50 ? '#059669' : progress >= 15 ? '#2563eb' : '#94a3b8';
+    return `
+      <div class="holding-item">
+        <div class="holding-top">
+          <span class="holding-name">${escapeHtml(row.stockName)}</span>
+          <span class="holding-pct" style="color:${color}">${progress.toFixed(1)}%</span>
+        </div>
+        <div class="holding-bar-track">
+          <div class="holding-bar-fill" style="width:${progress}%;background:${color};"></div>
+        </div>
+        <div class="holding-bottom">
+          <span>成本 ${formatMoney(row.totalCost)}</span>
+          <span style="color:#059669;font-weight:600;">已回收 ${formatMoney(row.totalDividend)}</span>
+        </div>
+      </div>`;
   }).join('');
 }
 
